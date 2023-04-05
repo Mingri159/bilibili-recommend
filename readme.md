@@ -40,3 +40,4 @@
 
 4、[QQ群【491793130】](https://jq.qq.com/?_wv=1027&k=dfro5XYU)
 
+- 从URL安装：https://raw.githubusercontent.com/Mingri159/bilibili-recommend/main/bilibili-recommend.js
