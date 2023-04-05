@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         ✨b站首页推荐纯享版 - ✨【修改自用(2023/4/3)  @胡桃的精通沙】
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version       0.1
 // @description  修改自用
 // @author       Waflare | @胡桃的精通沙
 // @match        https://www.bilibili.com/
-// @icon         https://fastly.jsdelivr.net/gh/the1812/Bilibili-Evolved@preview/images/logo-small.png
+// @icon          https://fastly.jsdelivr.net/gh/the1812/Bilibili-Evolved@preview/images/logo-small.png
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
 // @require      https://code.jquery.com/jquery-3.6.0.js
@@ -166,7 +166,7 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
   function gotoPage(url) {
     let _url = url;
     return function () {
-      console.log(_url);
+      // console.log(_url);
       window.open(_url, "_blank");
     };
   }
@@ -211,6 +211,58 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
    * 获取app授权：https://github.com/magicdawn/bilibili-app-recommend/blob/main/src/utility/auth.ts
    */
 
+  // 操作菜单
+  function menu_fun(item) {
+    //打开菜单
+    $(`#more_${item.bvid}`).on('click', function (e) {
+      e.stopPropagation();
+      $(".w_menu").css('display', "none")
+      setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "flex") }, 50)
+    });
+
+    // 鼠标移开 关闭菜单
+    $(`.w_menu`).on('mouseleave', function (e) { $(".w_menu").css('display', "none") });
+
+    //1、稍后再看
+    $(`#w_menu_item_1_${item.bvid}`).on('click', function (e) {
+      e.stopPropagation();
+      setTimeout(() => {
+        if (watchLaterFactory("add", item.id)) {
+          $(`#w_menu_item_1_${item.bvid}`).css('display', "none");
+          $(`#w_menu_item_2_${item.bvid}`).css('display', "flex");
+          setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 500)
+        }
+      }, 50)
+    });
+
+    //2、取消稍后再看
+    $(`#w_menu_item_2_${item.bvid}`).on('click', function (e) {
+      e.stopPropagation();
+      setTimeout(() => {
+        if (watchLaterFactory("del", item.id)) {
+          $(`#w_menu_item_1_${item.bvid}`).css('display', "flex");
+          $(`#w_menu_item_2_${item.bvid}`).css('display', "none");
+          setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 500)
+        }
+      }, 50)
+    });
+
+    // 视频 立马消失
+    $(`#w_menu_item_6_${item.bvid}`).on('click', function (e) {
+      e.stopPropagation();
+      $(`#${item.bvid}`).css('display', "none")
+    });
+
+    //获取视频封面
+    $(`#w_menu_item_5_${item.bvid}`).on('click', function (e) {
+      e.stopPropagation();
+      let url = item.uri
+      window.open(url.replace(/bilibili/, "bilibiliq"), "_blank");
+    });
+
+    // 打开视频详情页
+    $(`#${item.bvid}`).on("click", gotoPage(item.uri));
+  }
 
   // 老版 b站
   async function formatData() {
@@ -225,55 +277,7 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
     `);
     for (let item of data) {
       $("#w_content").append(getTemplate(item));
-      //打开菜单
-      $(`#more_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        $(".w_menu").css('display', "none")
-        setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "flex") }, 50)
-      });
-
-      // 鼠标移开 关闭菜单
-      $(`.w_menu`).on('mouseleave', function (e) { $(".w_menu").css('display', "none") });
-
-      //1、稍后再看
-      $(`#w_menu_item_1_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        setTimeout(() => {
-          if (watchLaterFactory("add", item.id)) {
-            $(`#w_menu_item_1_${item.bvid}`).css('display', "none");
-            $(`#w_menu_item_2_${item.bvid}`).css('display', "flex");
-            setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 500)
-          }
-        }, 50)
-      });
-
-      //2、取消稍后再看
-      $(`#w_menu_item_2_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        setTimeout(() => {
-          if (watchLaterFactory("del", item.id)) {
-            $(`#w_menu_item_1_${item.bvid}`).css('display', "flex");
-            $(`#w_menu_item_2_${item.bvid}`).css('display', "none");
-            setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 500)
-          }
-        }, 50)
-      });
-
-      // 视频 立马消失
-      $(`#w_menu_item_6_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        $(`#${item.bvid}`).css('display', "none")
-      });
-
-      //获取视频封面
-      $(`#w_menu_item_5_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        let url = item.uri
-        window.open(url.replace(/bilibili/, "bilibiliq"), "_blank");
-      });
-
-      // 打开视频详情页
-      $(`#${item.bvid}`).on("click", gotoPage(item.uri));
+      menu_fun(item)//操作菜单
     }
     $("#w_body").append(`<div class="w_btn_outer"><div id="w_f11"><svg style="width: 25px;fill: currentColor;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1155" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M170.666667 170.666667v213.333333H85.333333V85.333333h298.666667v85.333334H170.666667z m682.666666 213.333333V170.666667h-213.333333V85.333333h298.666667v298.666667h-85.333334zM170.666667 640v213.333333h213.333333v85.333334H85.333333v-298.666667h85.333334z m682.666666 0h85.333334v298.666667h-298.666667v-85.333334h213.333333v-213.333333z"  p-id="1156"></path></svg></div><div id="w_f5"><svg style = "width: 25px;fill: currentColor;"viewBox = "0 0 1024 1024" version = "1.1" xmlns = "http://www.w3.org/2000/svg" p-id="1155" xmlns: xlink = "http://www.w3.org/1999/xlink"> <path d="M960 416V192l-73.056 73.056a447.712 447.712 0 0 0-373.6-201.088C265.92 63.968 65.312 264.544 65.312 512S265.92 960.032 513.344 960.032a448.064 448.064 0 0 0 415.232-279.488 38.368 38.368 0 1 0-71.136-28.896 371.36 371.36 0 0 1-344.096 231.584C308.32 883.232 142.112 717.024 142.112 512S308.32 140.768 513.344 140.768c132.448 0 251.936 70.08 318.016 179.84L736 416h224z" p-id="1186"></path></svg></div ><div id="w_btn">顶</div></div>`);
     $("#w_f11").on("click", fun_f11);
@@ -295,57 +299,7 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
 
     for (let item of data) {
       $("#w_content").append(getTemplate(item));
-
-      //打开菜单
-      $(`#more_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        $(".w_menu").css('display', "none")
-        setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "flex") }, 50)
-      });
-
-      // 鼠标移开 关闭菜单
-      $(`.w_menu`).on('mouseleave', function (e) { $(".w_menu").css('display', "none") });
-
-      //1、稍后再看
-      $(`#w_menu_item_1_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        setTimeout(() => {
-          if (watchLaterFactory("add", item.id)) {
-            $(`#w_menu_item_1_${item.bvid}`).css('display', "none");
-            $(`#w_menu_item_2_${item.bvid}`).css('display', "flex");
-            setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 500)
-          }
-        }, 50)
-      });
-
-      //2、取消稍后再看
-      $(`#w_menu_item_2_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        setTimeout(() => {
-          if (watchLaterFactory("del", item.id)) {
-            $(`#w_menu_item_1_${item.bvid}`).css('display', "flex");
-            $(`#w_menu_item_2_${item.bvid}`).css('display', "none");
-            setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 500)
-          }
-        }, 50)
-      });
-
-      // 视频 立马消失
-      $(`#w_menu_item_6_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        $(`#${item.bvid}`).css('display', "none")
-      });
-
-      //获取视频封面
-      $(`#w_menu_item_5_${item.bvid}`).on('click', function (e) {
-        e.stopPropagation();
-        let url = item.uri
-        window.open(url.replace(/bilibili/, "bilibiliq"), "_blank");
-      });
-
-      // 打开视频详情页
-      $(`#${item.bvid}`).on("click", gotoPage(item.uri));
-
+      menu_fun(item)//操作菜单
     }
     $("#w_body").append(`<div class="w_btn_outer"><div id="w_f11"><svg style="width: 25px;fill: currentColor;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1155" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M170.666667 170.666667v213.333333H85.333333V85.333333h298.666667v85.333334H170.666667z m682.666666 213.333333V170.666667h-213.333333V85.333333h298.666667v298.666667h-85.333334zM170.666667 640v213.333333h213.333333v85.333334H85.333333v-298.666667h85.333334z m682.666666 0h85.333334v298.666667h-298.666667v-85.333334h213.333333v-213.333333z"  p-id="1156"></path></svg></div><div id="w_f5"><svg style = "width: 25px;fill: currentColor;"viewBox = "0 0 1024 1024" version = "1.1" xmlns = "http://www.w3.org/2000/svg" p-id="1155" xmlns: xlink = "http://www.w3.org/1999/xlink"> <path d="M960 416V192l-73.056 73.056a447.712 447.712 0 0 0-373.6-201.088C265.92 63.968 65.312 264.544 65.312 512S265.92 960.032 513.344 960.032a448.064 448.064 0 0 0 415.232-279.488 38.368 38.368 0 1 0-71.136-28.896 371.36 371.36 0 0 1-344.096 231.584C308.32 883.232 142.112 717.024 142.112 512S308.32 140.768 513.344 140.768c132.448 0 251.936 70.08 318.016 179.84L736 416h224z" p-id="1186"></path></svg></div ><div id="w_btn">顶</div></div>`);
     $("#w_body").on('click', function (e) { $(".w_menu").css('display', "none") });//点击空白处，关闭菜单
@@ -383,7 +337,7 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
     let data = await getFrontPage();
     for (let item of data) {
       $("#w_content").append(getTemplate(item));
-      $(`#${item.bvid}`).on("click", gotoPage(item.uri));
+      menu_fun(item)//操作菜单
     }
   }
 
