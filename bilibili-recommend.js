@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         ✨b站首页推荐纯享版 - ✨【修改自用(2023/4/3)  @胡桃的精通沙】
+// @name         ✨b站首页推荐纯享版 - ✨【 bilibili-recommend 修改自用(2023/4/3)  @胡桃的精通沙】
 // @namespace    http://tampermonkey.net/
 // @version       0.1
 // @description  修改自用
@@ -23,11 +23,11 @@
 
 
 
-//bilibili首页
-GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__channel{display: none !important} ");
-
 (function () {
   "use strict";
+
+  //bilibili首页
+  GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__channel,.bili-layout,.bili-footer{display: none !important} ");
 
   // 请求首页推荐数据  ?fresh_type=3
   function getFrontPage() {
@@ -95,7 +95,7 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
       <div class='w_item' id='${item.bvid}'>
         <div class='w_img_box'>
           <img src='${item.pic}' />
-
+          <div class="watch-later-tip" id="w_watch_later_tip_${item.bvid}">已添加至稍后再看</div>
           <div class='w_stat_outer'>
            <div class='w_stat'>
             <div style="display: flex; gap: 10px;">
@@ -228,9 +228,10 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
       e.stopPropagation();
       setTimeout(() => {
         if (watchLaterFactory("add", item.id)) {
-          $(`#w_menu_item_1_${item.bvid}`).css('display', "none");
-          $(`#w_menu_item_2_${item.bvid}`).css('display', "flex");
-          setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 500)
+          $(`#w_watch_later_tip_${item.bvid}`).css('display', "flex");//打开稍后再看提示
+          $(`#w_menu_item_1_${item.bvid}`).css('display', "none");//稍后再看
+          $(`#w_menu_item_2_${item.bvid}`).css('display', "flex");//取消稍后再看
+          setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 300)
         }
       }, 50)
     });
@@ -240,9 +241,10 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
       e.stopPropagation();
       setTimeout(() => {
         if (watchLaterFactory("del", item.id)) {
+          $(`#w_watch_later_tip_${item.bvid}`).css('display', "none");//关闭稍后再看提示
           $(`#w_menu_item_1_${item.bvid}`).css('display', "flex");
           $(`#w_menu_item_2_${item.bvid}`).css('display', "none");
-          setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 500)
+          setTimeout(() => { $(`#menu_${item.bvid}`).css('display', "none"); }, 300)
         }
       }, 50)
     });
@@ -455,6 +457,18 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
       left: 0;
       width: 100%;
     }
+
+    .watch-later-tip{
+      display:none;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      position: absolute;
+      top: 0;
+      right: 0;
+      border-radius: 6px;
+      padding: 0px 2px 0px 2px;
+      margin: 2px 2px 0px 0px;
+    }
     .w_item > .w_detail {
       width: 100%;
     }
@@ -583,8 +597,6 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
       line-height: 18px;
     }
 
-  
-
     .w_btn_outer{
       position: fixed;
       bottom: 30px;
@@ -638,7 +650,7 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
       }
       .w_item {
         width: 250px !important;
-      }
+      }      
     }
 
     @media screen and (max-width: 1200px) {
@@ -649,9 +661,9 @@ GM_addStyle(".home-redesign-base,.adblock-tips,.header-channel ,.bili-header__ch
         width: 250px !important;
       }
 
-       #w_btn_outer {
+      .w_btn_outer {
         right: 8px;
-       }
+      }
     }
 
   `);
